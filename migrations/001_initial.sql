@@ -88,9 +88,14 @@ CREATE TABLE IF NOT EXISTS requests (
   expires_at TIMESTAMPTZ NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  idempotency_key VARCHAR(255) UNIQUE,
-  UNIQUE (from_user_id, to_user_id, status)
+  idempotency_key VARCHAR(255) UNIQUE
 );
+
+-- Only one pending request allowed between the same sender/recipient pair at a time.
+-- Completed requests (accepted/rejected/etc.) are allowed to coexist for history.
+CREATE UNIQUE INDEX IF NOT EXISTS requests_one_pending_per_pair_idx
+  ON requests (from_user_id, to_user_id)
+  WHERE status = 'pending';
 
 CREATE INDEX IF NOT EXISTS requests_to_user_idx ON requests (to_user_id, status);
 CREATE INDEX IF NOT EXISTS requests_from_user_idx ON requests (from_user_id);

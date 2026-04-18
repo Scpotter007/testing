@@ -1,10 +1,14 @@
 // Test wallet operations and token ledger business logic
 
 describe('Token ledger logic', () => {
-  it('should not allow negative amounts', () => {
-    expect(() => {
-      if (-5 <= 0) throw new Error('Debit amount must be positive');
-    }).toThrow('Debit amount must be positive');
+  it('should not allow negative or zero debit amounts', () => {
+    // Simulate the validation check in debitTokens/creditTokens
+    const validateAmount = (amount: number) => {
+      if (amount <= 0) throw new Error('Amount must be positive');
+    };
+    expect(() => validateAmount(-5)).toThrow('Amount must be positive');
+    expect(() => validateAmount(0)).toThrow('Amount must be positive');
+    expect(() => validateAmount(1)).not.toThrow();
   });
 
   it('should detect insufficient balance', () => {

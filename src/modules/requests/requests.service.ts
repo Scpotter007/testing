@@ -33,17 +33,22 @@ export async function createRequest(
       [fromUserId]
     );
     if (fromUserRows.length === 0) throw new AppError(404, 'User not found', 'USER_NOT_FOUND');
-    if (fromUserRows[0].gender !== 'male') {
-      throw new AppError(403, 'Only male users can send requests', 'GENDER_RESTRICTION');
-    }
 
     const { rows: toUserRows } = await client.query(
       'SELECT gender FROM users WHERE id = $1',
       [toUserId]
     );
     if (toUserRows.length === 0) throw new AppError(404, 'Target user not found', 'USER_NOT_FOUND');
-    if (toUserRows[0].gender !== 'female') {
-      throw new AppError(403, 'Requests can only be sent to female users', 'GENDER_RESTRICTION');
+
+    // Apply gender pairing rules when configured (defaults to male_to_female per MVP spec).
+    // Set REQUEST_GENDER_PAIRING=open to disable gender-based restrictions.
+    if (config.requests.genderPairing === 'male_to_female') {
+      if (fromUserRows[0].gender !== 'male') {
+        throw new AppError(403, 'Only male users can send requests in this mode', 'GENDER_RESTRICTION');
+      }
+      if (toUserRows[0].gender !== 'female') {
+        throw new AppError(403, 'Requests can only be sent to female users in this mode', 'GENDER_RESTRICTION');
+      }
     }
 
     const { rows: existingReq } = await client.query(

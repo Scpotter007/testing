@@ -6,8 +6,8 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1'
   },
-  globals: {
-    'ts-jest': {
+  transform: {
+    '^.+\\.tsx?$': ['ts-jest', {
       tsconfig: {
         target: 'ES2020',
         module: 'commonjs',
@@ -15,6 +15,6 @@ module.exports = {
         strict: true,
         skipLibCheck: true
       }
-    }
+    }]
   }
 };

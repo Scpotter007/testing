@@ -30,4 +30,12 @@ export const config = {
     port: parseInt(process.env.PORT || '3000', 10),
     nodeEnv: process.env.NODE_ENV || 'development',
   },
+  requests: {
+    // Configurable gender pairing for connection requests.
+    // Default: male → female as specified in the MVP requirements.
+    // Set to 'open' to allow any-to-any requests regardless of gender.
+    genderPairing: (process.env.REQUEST_GENDER_PAIRING || 'male_to_female') as
+      | 'male_to_female'
+      | 'open',
+  },
 };
