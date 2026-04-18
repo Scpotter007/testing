@@ -18,14 +18,16 @@ export async function getDiscoveryFeed(
   const { limit = 20, offset = 0 } = filters;
   const radiusMeters = config.distance.discoveryRadiusMeters;
 
-  let genderFilter = '';
-  const params: any[] = [userId, lng, lat, radiusMeters, limit, offset];
-
+  // Determine target gender using a parameterized value to prevent any injection risk.
+  // null means no gender filter (show all genders, e.g. for 'other').
+  let targetGender: string | null = null;
   if (userGender === 'male') {
-    genderFilter = `AND u.gender = 'female'`;
+    targetGender = 'female';
   } else if (userGender === 'female') {
-    genderFilter = `AND u.gender = 'male'`;
+    targetGender = 'male';
   }
+
+  const params: any[] = [userId, lng, lat, radiusMeters, limit, offset, targetGender];
 
   const { rows } = await query(
     `SELECT 
@@ -46,7 +48,7 @@ export async function getDiscoveryFeed(
      WHERE p.user_id != $1
        AND p.location IS NOT NULL
        AND u.is_active = true
-       ${genderFilter}
+       AND ($7::text IS NULL OR u.gender = $7)
        AND ST_DWithin(
          p.location::geography,
          ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography,

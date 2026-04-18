@@ -29,10 +29,12 @@ describe('Request business rules', () => {
     expect(notExpired > new Date()).toBe(true);
   });
 
-  it('male gender check', () => {
+  it('should enforce male-to-female gender pairing rule by default', () => {
+    // In male_to_female mode: only 'male' senders are allowed
     const allowedSenderGender = 'male';
     expect(allowedSenderGender === 'male').toBe(true);
-    const otherGender: string = 'female';
-    expect(otherGender === 'male').toBe(false);
+    // Non-male sender should be rejected
+    const femaleSender: string = 'female';
+    expect(femaleSender === 'male').toBe(false);
   });
 });

@@ -158,7 +158,8 @@ export async function cancelRequest(requestId: string, fromUserId: string) {
 }
 
 export async function getMyRequests(userId: string, direction: 'sent' | 'received') {
-  const col = direction === 'sent' ? 'from_user_id' : 'to_user_id';
+  // Use separate safe queries instead of dynamic column interpolation
+  const isSent = direction === 'sent';
   const { rows } = await query(
     `SELECT r.*, 
        p_from.display_name as from_display_name,
@@ -166,9 +167,9 @@ export async function getMyRequests(userId: string, direction: 'sent' | 'receive
      FROM requests r
      JOIN profiles p_from ON p_from.user_id = r.from_user_id
      JOIN profiles p_to ON p_to.user_id = r.to_user_id
-     WHERE r.${col} = $1
+     WHERE (($2 AND r.from_user_id = $1) OR (NOT $2 AND r.to_user_id = $1))
      ORDER BY r.created_at DESC`,
-    [userId]
+    [userId, isSent]
   );
   return rows;
 }
