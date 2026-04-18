@@ -1,5 +1,4 @@
-import { haversineDistance } from '../src/utils/geo';
-import { encryptMessage, decryptMessage } from '../src/utils/crypto';
+// Test wallet operations and token ledger business logic
 
 describe('Token ledger logic', () => {
   it('should not allow negative amounts', () => {

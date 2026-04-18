@@ -164,11 +164,14 @@ export async function reserveTokens(
 
   const escrowId = escrowRows[0].id;
 
+  // balance_after reflects the available (spendable) balance after reservation.
+  // The wallet.balance column itself is unchanged; only the reserved counter increases.
+  const availableAfter = wallet.balance - wallet.reserved - amount;
   await client.query(
     `INSERT INTO ledger_entries
      (user_id, amount, type, reference_id, reference_type, balance_after, description)
      VALUES ($1, $2, 'escrow_reserve', $3, 'escrow', $4, $5)`,
-    [userId, -amount, escrowId, wallet.balance, `Reserved ${amount} tokens in escrow`]
+    [userId, -amount, escrowId, availableAfter, `Reserved ${amount} tokens in escrow`]
   );
 
   return escrowId;

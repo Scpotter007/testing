@@ -159,12 +159,12 @@ CREATE INDEX IF NOT EXISTS media_files_uploader_idx ON media_files (uploader_id)
 CREATE INDEX IF NOT EXISTS media_files_conversation_idx ON media_files (conversation_id);
 
 -- Meetups (QR-based in-person meeting verification)
+-- qr_token_hash stores only the SHA-256 hash of the token; plaintext is never persisted.
 CREATE TABLE IF NOT EXISTS meetups (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   initiator_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   partner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  qr_token VARCHAR(255) UNIQUE NOT NULL,
-  qr_token_hash VARCHAR(255) NOT NULL,
+  qr_token_hash VARCHAR(255) NOT NULL UNIQUE,
   status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'verified', 'expired', 'cancelled')),
   initiator_lat DOUBLE PRECISION,
   initiator_lng DOUBLE PRECISION,
@@ -175,6 +175,11 @@ CREATE TABLE IF NOT EXISTS meetups (
   verified_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Prevent multiple concurrent pending meetups between the same pair of users
+CREATE UNIQUE INDEX IF NOT EXISTS meetups_pending_pair_idx
+  ON meetups (LEAST(initiator_id::text, partner_id::text), GREATEST(initiator_id::text, partner_id::text))
+  WHERE status = 'pending';
 
 CREATE INDEX IF NOT EXISTS meetups_initiator_idx ON meetups (initiator_id);
 CREATE INDEX IF NOT EXISTS meetups_partner_idx ON meetups (partner_id);

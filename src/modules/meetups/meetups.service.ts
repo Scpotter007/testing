@@ -10,11 +10,13 @@ import { haversineDistance } from '../../utils/geo';
 export async function initiateMeetup(initiatorId: string, partnerId: string) {
   const { token, hash, expiresAt } = createQRToken();
 
+  // Only store the hash — never persist the plaintext token in the database.
+  // The plaintext token lives only in the QR code payload delivered to the client.
   const { rows } = await query(
-    `INSERT INTO meetups (initiator_id, partner_id, qr_token, qr_token_hash, expires_at)
-     VALUES ($1, $2, $3, $4, $5)
+    `INSERT INTO meetups (initiator_id, partner_id, qr_token_hash, expires_at)
+     VALUES ($1, $2, $3, $4)
      RETURNING id, initiator_id, partner_id, status, expires_at`,
-    [initiatorId, partnerId, token, hash, expiresAt]
+    [initiatorId, partnerId, hash, expiresAt]
   );
 
   const meetup = rows[0];

@@ -2,7 +2,17 @@ import { query, withTransaction } from '../../db';
 import { AppError } from '../../middleware/errorHandler.middleware';
 import { encryptMessage, decryptMessage } from '../../utils/crypto';
 
-const CHAT_ENCRYPTION_SECRET = process.env.CHAT_ENCRYPTION_SECRET || 'default-chat-secret-change-in-prod';
+const CHAT_ENCRYPTION_SECRET = (() => {
+  const secret = process.env.CHAT_ENCRYPTION_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('CHAT_ENCRYPTION_SECRET must be set in production');
+    }
+    // Development/test fallback — never use in production
+    return 'dev-chat-secret-do-not-use-in-production';
+  }
+  return secret;
+})();
 
 export async function getConversations(userId: string) {
   const { rows } = await query(
