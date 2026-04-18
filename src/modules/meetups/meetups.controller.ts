@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { validationResult } from 'express-validator';
 import {
-  inititateMeetup,
+  initiateMeetup as initiateMeetupService,
   verifyMeetup,
   updateInitiatorLocation,
   getMeetupHistory,
@@ -15,7 +15,7 @@ export async function initiateMeetup(req: Request, res: Response, next: NextFunc
       return;
     }
     const { partnerId } = req.body;
-    const result = await inititateMeetup(req.user!.userId, partnerId);
+    const result = await initiateMeetupService(req.user!.userId, partnerId);
     res.status(201).json(result);
   } catch (err) {
     next(err);

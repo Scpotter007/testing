@@ -7,7 +7,7 @@ import { createQRToken, generateQRCode, parseQRPayload } from '../../utils/qr';
 import { hashToken } from '../../utils/crypto';
 import { haversineDistance } from '../../utils/geo';
 
-export async function inititateMeetup(initiatorId: string, partnerId: string) {
+export async function initiateMeetup(initiatorId: string, partnerId: string) {
   const { token, hash, expiresAt } = createQRToken();
 
   const { rows } = await query(
